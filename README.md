@@ -1,123 +1,67 @@
-# Regional Gap Analyzer
+# Geospatial Inequality Analytics
 
-Regional Inequality Analysis System — Province-level scoring and geospatial heatmap visualization.
+Scores every Indonesian province on economic, infrastructure, health and education indicators, ranks them, tracks the
+gap over time and shows it on an interactive map.
 
-## 🏗️ Project Structure
+Built by a six-person team with trunk-based development, CI and a documented API.
+
+## What it does
+
+- **Composite score** per province and year from four weighted dimensions: economic (30%), infrastructure (25%),
+  health (25%) and education (20%). Indicators are min-max normalised to 0–100 and "bad" indicators (unemployment,
+  poverty, infant mortality) are inverted. The full method is in [docs/scoring-method.md](docs/scoring-method.md).
+- **Choropleth map** of the scores (Leaflet), with a detail page per province and its history
+- **Rankings**, top and bottom provinces, and a gap analysis between them
+- **Year scoring** to recompute and compare years
+- **Alerts** when a province crosses a threshold, with acknowledge and resolve
+- **Admin** pages for data and pipeline runs
+- **Methodology** page that explains the score to non-technical readers
+
+The bundled data is demonstration data. [docs/data-sources.md](docs/data-sources.md) lists the official sources (BPS
+and others) to load instead.
+
+## Architecture
 
 ```
-regional-gap-analyzer/
-├── backend/           # FastAPI + MongoDB backend
-├── frontend/          # Next.js App Router frontend
-├── data/              # Raw, processed, and geo data
-├── docs/              # Project documentation
-├── docker-compose.yml # Container orchestration
-└── .github/           # CI/CD and PR templates
+data/raw ──► pipelines (pandas) ──► MongoDB ──► FastAPI ──► Next.js dashboard
+                                      ▲                         │
+                                      └── alerts, scoring tasks  └── Leaflet map, Recharts
 ```
 
-## 🚀 Quick Start
+| Path | Contents |
+| --- | --- |
+| `backend/` | FastAPI app: routers, services, repositories, pipelines and tasks over MongoDB (Motor) |
+| `frontend/` | Next.js App Router: dashboard, regions, province, year scoring, alerts, admin, methodology |
+| `data/` | Raw, processed and GeoJSON data |
+| `docs/` | [Architecture](docs/architecture.md), [API reference](docs/API-REFERENCE.md), [data dictionary](docs/data-dictionary.md), [scoring method](docs/scoring-method.md) |
 
-### Prerequisites
-- Docker & Docker Compose
-- Node.js >= 18 (for local dev)
-- Python >= 3.11 (for local dev)
+## Stack
 
-### Run with Docker
+Python 3.11, FastAPI, Motor (async MongoDB), pandas and NumPy on the backend. Next.js, React, TanStack Query,
+React Leaflet, d3-scale, Recharts and Tailwind CSS on the frontend. Docker Compose for local runs, GitHub Actions for
+CI.
 
-```bash
-# Clone and enter the repo
-cd regional-gap-analyzer
+## Run it locally
 
-# Copy environment files
+With Docker:
+
+```sh
 cp .env.example .env
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env.local
-
-# Start all services
 docker compose up --build
-
-# Verify backend health
-curl http://localhost:8000/health
-
-# Open frontend dashboard
-# http://localhost:3000/dashboard
+curl http://localhost:8000/health     # API
+open http://localhost:3000/dashboard  # dashboard
 ```
 
-### Local Development
+Without Docker:
 
-**Backend:**
-```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```sh
+cd backend && python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
+
+cd frontend && npm install && npm run dev
 ```
 
-**Frontend:**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## 🌿 Branching Workflow
-
-This project uses a **trunk-based development** workflow suitable for a 6-person team.
-
-### Branch Naming Convention
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| Feature | `feature/<scope>/<short-desc>` | `feature/api/scoring-endpoint` |
-| Bug Fix | `fix/<scope>/<short-desc>` | `fix/web/map-zoom-issue` |
-| Chore | `chore/<scope>/<short-desc>` | `chore/infra/update-deps` |
-
-**Scopes:** `api`, `web`, `data`, `docs`, `infra`
-
-### Creating a Feature Branch
-
-```bash
-# Ensure you're on latest main
-git checkout main
-git pull origin main
-
-# Create feature branch
-git checkout -b feature/api/my-new-feature
-
-# Make changes, commit, push
-git add .
-git commit -m "feat(api): add new endpoint for X"
-git push -u origin feature/api/my-new-feature
-
-# Create a Pull Request on GitHub
-# After approval and CI pass, squash merge to main
-```
-
-### Protected Branches
-- `main` — Always stable, demo-ready
-- `release/demo` — Optional freeze branch for demo week
-
-See [docs/branching.md](docs/branching.md) for full details.
-
-## 📚 Documentation
-
-- [Architecture Overview](docs/architecture.md)
-- [Branching Model](docs/branching.md)
-- [API Contract](docs/api-contract.md)
-- [Data Sources](docs/data-sources.md)
-- [Scoring Method](docs/scoring-method.md)
-- [Demo Script](docs/demo-script.md)
-
-## 🧪 Testing
-
-```bash
-# Backend tests (TODO)
-cd backend && pytest
-
-# Frontend tests
-cd frontend && npm test
-```
-
-## 📄 License
-
-MIT License — See [LICENSE](LICENSE) for details.
+Branch and commit conventions are in [docs/branching.md](docs/branching.md).
