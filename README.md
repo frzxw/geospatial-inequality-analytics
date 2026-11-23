@@ -14,7 +14,7 @@ Built by a six-person team with trunk-based development, CI and a documented API
 - **Rankings**, top and bottom provinces, and a gap analysis between them
 - **Year scoring** to recompute and compare years
 - **Alerts** when a province crosses a threshold, with acknowledge and resolve
-- **Admin** pages for data and pipeline runs
+- **Admin** area with login and data import
 - **Methodology** page that explains the score to non-technical readers
 
 The bundled data is demonstration data. [docs/data-sources.md](docs/data-sources.md) lists the official sources (BPS
